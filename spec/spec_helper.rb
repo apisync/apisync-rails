@@ -1,5 +1,13 @@
 require "bundler/setup"
+require 'awesome_print'
+require 'webmock/rspec'
 require "apisync/rails"
+
+WebMock.disable_net_connect!
+
+# Loads test app
+require File.expand_path("../../spec/test_app/config/environment.rb", __FILE__)
+ActiveRecord::Migrator.migrations_paths = [File.expand_path("../../spec/test_app/db/migrate", __FILE__)]
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
@@ -10,5 +18,21 @@ RSpec.configure do |config|
 
   config.expect_with :rspec do |c|
     c.syntax = :expect
+  end
+
+  config.before(:suite) do
+    DatabaseCleaner.clean_with(:truncation)
+  end
+
+  config.before(:each, :integration) do |ex|
+    DatabaseCleaner.strategy = :transaction
+  end
+
+  config.before(:each, :integration) do |example|
+    DatabaseCleaner.start
+  end
+
+  config.append_after(:each, :integration) do
+    DatabaseCleaner.clean
   end
 end

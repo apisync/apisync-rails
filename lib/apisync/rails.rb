@@ -1,6 +1,12 @@
-require "apisync/rails/version"
+require "bundler/setup"
 
-module Apisync
+require "active_support"
+require "apisync/rails/version"
+require "apisync/rails/model"
+require "apisync/rails/http"
+require "apisync/active_record_extension"
+
+class Apisync
   module Rails
     # Your code goes here...
   end
