@@ -22,6 +22,7 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
+    Apisync.api_key = "random-key"
   end
 
   config.before(:each, :integration) do |ex|

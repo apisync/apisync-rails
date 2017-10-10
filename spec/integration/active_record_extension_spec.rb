@@ -67,7 +67,11 @@ RSpec.describe "Integration/ActiveRecord", :integration do
       stub_request(:post, "https://api.apisync.io/inventory-items")
         .with(
           body: payload.to_json,
-          headers: {'Accept'=>'application/vnd.api+json', 'Content-Type'=>'application/vnd.api+json'}
+          headers: {
+            'Accept'        => 'application/vnd.api+json',
+            'Content-Type'  => 'application/vnd.api+json',
+            'Authorization' => 'ApiToken random-key'
+          }
         )
       subject.save
     end
