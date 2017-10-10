@@ -39,7 +39,7 @@ Some attributes are required. See
 the [API reference](https://docs.apisync.io/api/) for details.
 
 ```ruby
-class Product < ActiveRecord
+class Product < ActiveRecord::Base
   apisync do
     # required attributes
     attribute :ad_template_type, from: :category
