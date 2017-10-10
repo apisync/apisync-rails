@@ -12,3 +12,6 @@
 .rspec_status
 
 *.gem
+spec/test_app/db/*.sqlite*
+spec/test_app/log
+spec/test_app/tmp
