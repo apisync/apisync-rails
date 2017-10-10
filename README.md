@@ -1,4 +1,4 @@
-# Apisync::Rails
+# apisync-rails
 
 This gem gives you the tools to keep your product models synchronized with
 ApiSync.
