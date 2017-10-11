@@ -10,13 +10,13 @@ class Apisync
 
       private
 
-      def start_apisync
+      def apisync_on_after_initialize
         @apisync = Apisync::Rails::Model.new(self)
         @apisync.instance_eval(&self.class.apisync_block)
         @apisync.validate!
       end
 
-      def save_to_apisync
+      def apisync_on_after_commit
         @apisync.sync
       end
     end
@@ -27,8 +27,8 @@ class Apisync
       end
 
       def apisync(&block)
-        after_initialize :start_apisync
-        after_commit :save_to_apisync
+        after_initialize :apisync_on_after_initialize
+        after_commit :apisync_on_after_commit
 
         @apisync_block = block
       end

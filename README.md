@@ -41,6 +41,10 @@ the [API reference](https://docs.apisync.io/api/) for details.
 ```ruby
 class Product < ActiveRecord::Base
   apisync do
+    # should the current item be synchronized?
+    # remove it to always sync all items
+    sync_if :should_sync?
+
     # required attributes
     attribute :ad_template_type, from: :category
     attribute :available,        from: :active?
@@ -63,6 +67,10 @@ class Product < ActiveRecord::Base
   end
 
   private
+
+  def should_sync?
+    true
+  end
 
   # required format (see reference docs)
   def images
@@ -92,6 +100,10 @@ end
 ```
 
 **Explanation**
+
+**sync_if** defines if the item should be synchronized. The method with the
+name of the symbol will be called. When `true`, the item will be saved on
+ApiSync. Remove this if you always want to push to ApiSync (recommended).
 
 **attribute** specifies one value to be sent to ApiSync. Pass the
 attribute name as parameter, e.g `attribute :brand`.

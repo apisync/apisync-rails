@@ -18,6 +18,11 @@ class Apisync
       def initialize(model)
         @model = model
         @attributes = {}
+        @should_sync = true
+      end
+
+      def sync_if(method_name)
+        @should_sync = @model.send(method_name.to_sym)
       end
 
       def attribute(attr_name, from: nil, value: nil)
@@ -35,13 +40,17 @@ class Apisync
       end
 
       def sync
-        set_reference_id
-        validate!
-        log_warnings
-        Apisync::Rails::Http.post(@attributes)
+        if sync?
+          set_reference_id
+          validate!
+          log_warnings
+          Apisync::Rails::Http.post(@attributes)
+        end
       end
 
       def validate!
+        return unless sync?
+
         REQUIRED_ATTRS.each do |attr, message|
           if @attributes[attr].blank?
             raise MissingAttribute, "Please specify #{attr}. #{message}"
@@ -58,6 +67,10 @@ class Apisync
       end
 
       private
+
+      def sync?
+        @should_sync
+      end
 
       def set_reference_id
         if @attributes[:reference_id].blank? && @model.id.present?

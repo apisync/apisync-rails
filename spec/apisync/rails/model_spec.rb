@@ -11,7 +11,9 @@ RSpec.describe Apisync::Rails::Model do
       model: "Mustang",
       title: "Mustang",
       my_subtitle: "It can be yours",
-      subtitle_name: "My subtitle name"
+      subtitle_name: "My subtitle name",
+      custom_should_sync: true,
+      custom_should_not_sync: false
     )
   end
 
@@ -32,28 +34,52 @@ RSpec.describe Apisync::Rails::Model do
         subject.attribute(:ad_template_type, from: :category)
       end
 
-      it 'sends attributes to apisync correctly' do
-        expect(Apisync::Rails::Http)
-          .to receive(:post)
-          .with({
-            ad_template_type: "vehicles",
-            available:        true,
-            content_language: "pt-br",
-            brand:            "Ford",
-            model:            "Mustang",
-            reference_id:     "my-id",
-            custom_attributes: [{
-              name:       nil,
-              identifier: "title",
-              value:      "Mustang"
-            }, {
-              name:       "My subtitle name",
-              identifier: "subtitle",
-              value:      "It can be yours"
-            }]
-          })
+      context 'no sync_if is not defined' do
+        it 'sends attributes to apisync correctly' do
+          expect(Apisync::Rails::Http)
+            .to receive(:post)
+            .with({
+              ad_template_type: "vehicles",
+              available:        true,
+              content_language: "pt-br",
+              brand:            "Ford",
+              model:            "Mustang",
+              reference_id:     "my-id",
+              custom_attributes: [{
+                name:       nil,
+                identifier: "title",
+                value:      "Mustang"
+              }, {
+                name:       "My subtitle name",
+                identifier: "subtitle",
+                value:      "It can be yours"
+              }]
+            })
 
-        subject.sync
+          subject.sync
+        end
+      end
+
+      context 'when sync_if references a method returning true' do
+        before do
+          subject.sync_if(:custom_should_sync)
+        end
+
+        it 'syncs' do
+          expect(Apisync::Rails::Http).to receive(:post)
+          subject.sync
+        end
+      end
+
+      context 'when sync_if references a method returning false' do
+        before do
+          subject.sync_if(:custom_should_not_sync)
+        end
+
+        it 'does not sync' do
+          expect(Apisync::Rails::Http).to_not receive(:post)
+          subject.sync
+        end
       end
     end
 
