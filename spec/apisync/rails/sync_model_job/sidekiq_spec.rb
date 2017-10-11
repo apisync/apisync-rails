@@ -17,10 +17,10 @@ RSpec.describe Apisync::Rails::SyncModelJob::Sidekiq do
             :payload,
             request_concurrency: :asynchronous,
             concurrency_lib: "Sidekiq 5.0.2",
-            too_many_requests_attempts: 1
+            too_many_requests_attempts: "1"
           )
 
-        subject.perform("::Product", "1", :payload)
+        subject.perform("::Product", "1", :payload, "1")
       end
 
       context "when there is a 429 response (too many requests)" do
