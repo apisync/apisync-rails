@@ -20,6 +20,26 @@ RSpec.describe Apisync::Rails::Model do
   subject { described_class.new(model) }
 
   describe '#sync' do
+    let(:payload) do
+      {
+        ad_template_type: "vehicles",
+        available:        true,
+        content_language: "pt-br",
+        brand:            "Ford",
+        model:            "Mustang",
+        reference_id:     "my-id",
+        custom_attributes: [{
+          name:       nil,
+          identifier: "title",
+          value:      "Mustang"
+        }, {
+          name:       "My subtitle name",
+          identifier: "subtitle",
+          value:      "It can be yours"
+        }]
+      }
+    end
+
     before do
       subject.attribute(:available,        from: :active?)
       subject.attribute(:content_language, value: "pt-br")
@@ -34,27 +54,27 @@ RSpec.describe Apisync::Rails::Model do
         subject.attribute(:ad_template_type, from: :category)
       end
 
-      context 'no sync_if is not defined' do
+      context 'sync_if is not defined' do
         it 'sends attributes to apisync correctly' do
           expect(Apisync::Rails::Http)
             .to receive(:post)
-            .with({
-              ad_template_type: "vehicles",
-              available:        true,
-              content_language: "pt-br",
-              brand:            "Ford",
-              model:            "Mustang",
-              reference_id:     "my-id",
-              custom_attributes: [{
-                name:       nil,
-                identifier: "title",
-                value:      "Mustang"
-              }, {
-                name:       "My subtitle name",
-                identifier: "subtitle",
-                value:      "It can be yours"
-              }]
-            })
+            .with(payload, request_concurrency: :synchronous)
+
+          subject.sync
+        end
+      end
+
+      context 'when Sidekiq is defined' do
+        before do
+          stub_const("::Sidekiq", Class.new)
+          stub_const("::Sidekiq::Worker", Module.new)
+          stub_const("::Apisync::Rails::SyncModelJob::Sidekiq", Class.new)
+        end
+
+        it 'schedules a Sidekiq job' do
+          expect(Apisync::Rails::SyncModelJob::Sidekiq)
+            .to receive(:perform_async)
+            .with("RSpec::Mocks::Double", "my-id", payload)
 
           subject.sync
         end

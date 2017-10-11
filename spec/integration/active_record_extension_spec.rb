@@ -72,22 +72,60 @@ RSpec.describe "Integration/ActiveRecord", :integration do
   describe "#save" do
     context 'when sync_if is true' do
       before do
+        stub_const("::Rails::VERSION::STRING", "5.0.0")
+
         allow_any_instance_of(::DummyProduct)
           .to receive(:should_sync)
           .and_return(true)
       end
 
-      it 'calls apisync' do
-        stub_request(:post, "https://api.apisync.io/inventory-items")
-          .with(
-            body: payload.to_json,
-            headers: {
-              'Accept'        => 'application/vnd.api+json',
-              'Content-Type'  => 'application/vnd.api+json',
-              'Authorization' => 'ApiToken random-key'
-            }
-          )
-        subject.save
+      context 'when no queueing system is found' do
+        it 'calls apisync directly' do
+          stub_request(:post, "https://api.apisync.io/inventory-items")
+            .with(
+              body: payload.to_json,
+              headers: {
+                'Accept'                => 'application/vnd.api+json',
+                'Content-Type'          => 'application/vnd.api+json',
+                'Authorization'         => 'ApiToken random-key',
+                'X-Client-Library'      => "apisync-rails #{Apisync::Rails::VERSION}",
+                'X-Request-Concurrency' => 'synchronous',
+                'X-Framework'           => 'Ruby on Rails 5.0.0'
+              }
+            )
+          subject.save
+        end
+      end
+
+      context 'when Sidekiq is defined' do
+        before do
+          stub_const("::Sidekiq", Class.new)
+          stub_const("::Sidekiq::Worker", Module.new)
+          stub_const("::Sidekiq::VERSION", "5.0.2")
+          allow(Apisync::Rails::SyncModelJob::Sidekiq)
+            .to receive(:perform_async) do |model_name, id, attrs|
+              Apisync::Rails::SyncModelJob::Sidekiq
+                .new
+                .perform(model_name, id, attrs)
+          end
+        end
+
+        it 'calls Sidekiq job' do
+          stub_request(:post, "https://api.apisync.io/inventory-items")
+            .with(
+              body: payload.to_json,
+              headers: {
+                'Accept'                => 'application/vnd.api+json',
+                'Content-Type'          => 'application/vnd.api+json',
+                'Authorization'         => 'ApiToken random-key',
+                'X-Client-Library'      => "apisync-rails #{Apisync::Rails::VERSION}",
+                'X-Request-Concurrency' => 'asynchronous',
+                'X-Framework'           => 'Ruby on Rails 5.0.0',
+                'X-Concurrency-Lib'     => 'Sidekiq 5.0.2'
+              }
+            )
+          subject.save
+        end
       end
     end
 

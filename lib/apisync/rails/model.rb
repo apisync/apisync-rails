@@ -44,7 +44,19 @@ class Apisync
           set_reference_id
           validate!
           log_warnings
-          Apisync::Rails::Http.post(@attributes)
+
+          if defined?(::Sidekiq)
+            Apisync::Rails::SyncModelJob::Sidekiq.perform_async(
+              @model.class.name,
+              @model.id,
+              @attributes
+            )
+          else
+            Apisync::Rails::Http.post(
+              @attributes,
+              request_concurrency: :synchronous
+            )
+          end
         end
       end
 
