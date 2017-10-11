@@ -90,7 +90,7 @@ RSpec.describe "Integration/ActiveRecord", :integration do
                 'Authorization'         => 'ApiToken random-key',
                 'X-Client-Library'      => "apisync-rails #{Apisync::Rails::VERSION}",
                 'X-Request-Concurrency' => 'synchronous',
-                'X-Framework'           => 'Ruby on Rails 5.0.0'
+                'X-Framework'           => 'Ruby on Rails 5.0.0',
               }
             )
           subject.save
@@ -121,7 +121,8 @@ RSpec.describe "Integration/ActiveRecord", :integration do
                 'X-Client-Library'      => "apisync-rails #{Apisync::Rails::VERSION}",
                 'X-Request-Concurrency' => 'asynchronous',
                 'X-Framework'           => 'Ruby on Rails 5.0.0',
-                'X-Concurrency-Lib'     => 'Sidekiq 5.0.2'
+                'X-Concurrency-Lib'     => 'Sidekiq 5.0.2',
+                'X-TooManyRequests-Attempts' => '1'
               }
             )
           subject.save

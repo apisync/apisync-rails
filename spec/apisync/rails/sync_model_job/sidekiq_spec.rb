@@ -16,10 +16,32 @@ RSpec.describe Apisync::Rails::SyncModelJob::Sidekiq do
           .with(
             :payload,
             request_concurrency: :asynchronous,
-            concurrency_lib: "Sidekiq 5.0.2"
+            concurrency_lib: "Sidekiq 5.0.2",
+            too_many_requests_attempts: 1
           )
 
         subject.perform("::Product", "1", :payload)
+      end
+
+      context "when there is a 429 response (too many requests)" do
+        before do
+          stub_request(:post, "https://api.apisync.io/inventory-items")
+            .to_return(status: 429)
+        end
+
+        it 're-schedules the current post' do
+          expect(described_class)
+            .to receive(:perform_in)
+            .with(
+              be_between(30, 300),
+              "::Product",
+              "1",
+              :payload,
+              2
+            )
+
+          subject.perform("::Product", "1", :payload)
+        end
       end
     end
 

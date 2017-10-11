@@ -1,7 +1,7 @@
 class Apisync
   module Rails
     class Http
-      def self.post(attrs, request_concurrency:, concurrency_lib: nil)
+      def self.post(attrs, request_concurrency:, too_many_requests_attempts: nil, concurrency_lib: nil)
         headers = {}
         headers["X-Request-Concurrency"] = request_concurrency.to_s
 
@@ -18,6 +18,9 @@ class Apisync
 
         if concurrency_lib
           headers["X-Concurrency-Lib"] = concurrency_lib.to_s
+        end
+        if too_many_requests_attempts
+          headers["X-TooManyRequests-Attempts"] = too_many_requests_attempts.to_s
         end
 
         client = Apisync.new
