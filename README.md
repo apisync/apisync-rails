@@ -6,7 +6,8 @@ ApiSync.
 * **DSL:** built-in DSL for ActiveRecord models that pushes your data
 automatically to apisync.io.
 * **Sidekiq:** when Sidekiq is present, this gem will push data asynchronously.
-Otherwise, it will fallback to pushing data synchronously.
+Otherwise, it will fallback to pushing data synchronously. We strongly recommend
+using Sidekiq so errors are handled automatically for you.
 
 If you're not using Rails with ActiveRecord, please use
 [apisync-ruby](https://github.com/apisync/apisync-ruby) instead.
@@ -137,6 +138,20 @@ This gem uses Rails' callbacks to trigger synchronization.
 If you're bypassing methods like `after_commit`,
 no data will be sent to ApiSync. For example, `update_attribute` doesn't
 perform validations checks, so please use `update_attributes` instead.
+
+### TooManyRequests
+
+When too many simultaneous requests are being made, a 429 status code will be
+returned from the server to indicate to the client to slow down.
+
+When using Sidekiq, this lib's algorithm will automatically throttle (slow down)
+the requests. When not using any queue gem, `Apisync::TooManyRequests` exception
+will be raised and you will have to catch it, therefore
+**we strongly recommend using Sidekiq**.
+
+Without Sidekiq, an ActiveRecord's `after_commit` callback is used so the exception
+shouldn't prevent your record from being saved to the database, but you have
+to rescue it manually.
 
 ## Development
 
