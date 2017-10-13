@@ -48,6 +48,8 @@ class Apisync
           validate!(payload)
           log_warnings(payload)
 
+          Apisync::Rails::Extensions.setup
+
           if defined?(::Sidekiq)
             Apisync::Rails::SyncModelJob::Sidekiq.perform_async(
               @model.class.name,

@@ -24,7 +24,18 @@ class Apisync
         end
 
         client = Apisync.new
-        client.inventory_items.save(attributes: attrs, headers: headers)
+        response = client.inventory_items.save(attributes: attrs, headers: headers)
+
+        unless response.success?
+          reference_id_msg = ""
+          if attributes["reference_id"].present?
+            reference_id_msg = "with reference_id '#{attributes["reference_id"]}' "
+          end
+
+          ::Rails.logger.warn "[apisync] Request #{reference_id}failed: #{response.body}"
+        end
+
+        response
       end
     end
   end
