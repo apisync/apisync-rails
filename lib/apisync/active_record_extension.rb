@@ -13,7 +13,6 @@ class Apisync
       def apisync_on_after_initialize
         @apisync = Apisync::Rails::Model.new(self)
         @apisync.instance_eval(&self.class.apisync_block)
-        @apisync.validate!
       end
 
       def apisync_on_after_commit

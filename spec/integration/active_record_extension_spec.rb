@@ -56,7 +56,9 @@ RSpec.describe "Integration/ActiveRecord", :integration do
   end
 
   subject do
-    DummyProduct.new(
+    # To make sure that we don't try to process stuff on initialization
+    model = DummyProduct.new
+    model = DummyProduct.new(
       id:             uuid,
       title:          'iPad Pro',
       description:    'iPad Pro for professionals',

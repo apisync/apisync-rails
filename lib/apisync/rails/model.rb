@@ -18,6 +18,7 @@ class Apisync
       def initialize(model)
         @model = model
         @attributes = {}
+        @payload = {}
         @should_sync = true
       end
 
@@ -27,67 +28,98 @@ class Apisync
 
       def attribute(attr_name, from: nil, value: nil)
         @attributes.delete(attr_name)
-        @attributes[attr_name] = attr_value(attr_name, from: from, value: value)
+        @attributes[attr_name] = { attr_name: attr_name, from: from, value: value }
       end
 
       def custom_attribute(attr_name, from: nil, value: nil, name: nil)
         @attributes[:custom_attributes] ||= []
         @attributes[:custom_attributes] << {
-          name: localized_name(name),
-          identifier: attr_name.to_s,
-          value: attr_value(attr_name, from: from, value: value)
+          attr_name: attr_name,
+          from: from,
+          value: value,
+          name: name
         }
       end
 
       def sync
         if sync?
-          set_reference_id
-          validate!
-          log_warnings
+          payload = generate_payload
+          payload = set_reference_id(payload)
+          validate!(payload)
+          log_warnings(payload)
 
           if defined?(::Sidekiq)
             Apisync::Rails::SyncModelJob::Sidekiq.perform_async(
               @model.class.name,
               @model.id,
-              @attributes
+              payload
             )
           else
             Apisync::Rails::Http.post(
-              @attributes,
+              payload,
               request_concurrency: :synchronous
             )
           end
         end
       end
 
-      def validate!
+      def validate!(payload)
         return unless sync?
 
         REQUIRED_ATTRS.each do |attr, message|
-          if @attributes[attr].blank?
-            raise MissingAttribute, "Please specify #{attr}. #{message}"
+          if payload[attr].blank?
+            raise MissingAttribute, "Please specify '#{attr}'. #{message}"
           end
         end
       end
 
-      def log_warnings
+      def log_warnings(payload)
         WARNING_ATTRS.each do |attr, message|
-          if @attributes[attr].blank?
-            ::Rails.logger.warn "Please specify #{attr}. #{message}"
+          if payload[attr].blank?
+            ::Rails.logger.warn "Please specify '#{attr}'. #{message}"
           end
         end
       end
 
       private
 
+      def generate_payload
+        @payload = {}
+        @attributes.each do |attr, properties|
+          if attr == :custom_attributes
+            custom_attrs = []
+            properties.each do |custom_attr|
+              from      = custom_attr[:from]
+              value     = custom_attr[:value]
+              attr_name = custom_attr[:attr_name]
+              name      = custom_attr[:name]
+
+              custom_attrs << {
+                name: localized_name(name),
+                identifier: attr_name.to_s,
+                value: attr_value(attr_name, from: from, value: value)
+              }
+            end
+            @payload[:custom_attributes] = custom_attrs
+          else
+            from  = properties[:from]
+            value = properties[:value]
+            @payload[attr] = attr_value(attr, from: from, value: value)
+          end
+        end
+
+        @payload
+      end
+
       def sync?
         @should_sync
       end
 
-      def set_reference_id
-        if @attributes[:reference_id].blank? && @model.id.present?
-          @attributes[:reference_id] = @model.id.to_s
+      def set_reference_id(payload)
+        if payload[:reference_id].blank? && @model.id.present?
+          payload[:reference_id] = @model.id.to_s
         end
+        payload
       end
 
       def attr_value(attr_name, from:, value:)
