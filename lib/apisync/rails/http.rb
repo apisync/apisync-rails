@@ -28,11 +28,11 @@ class Apisync
 
         unless response.success?
           reference_id_msg = ""
-          if attributes["reference_id"].present?
-            reference_id_msg = "with reference_id '#{attributes["reference_id"]}' "
+          if attrs["reference_id"].present?
+            reference_id_msg = "with reference_id '#{attrs[:reference_id]}' "
           end
 
-          ::Rails.logger.warn "[apisync] Request #{reference_id}failed: #{response.body}"
+          ::Rails.logger.warn "[apisync] Request #{reference_id_msg}failed: #{response.body}"
         end
 
         response

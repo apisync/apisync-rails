@@ -132,6 +132,13 @@ over and over.
 By default, `reference_id` is set to whatever **id** value is. You can
 customize it, e.g `attribute :reference_id, from: :my_custom_id`.
 
+### Failed requests
+
+A `warning` will be logged (`Rails.logger.warn`) whenever a request fails.
+
+In asynchronous cases (e.g Sidekiq), an exception will be raised
+(`Apisync::RequestFailed`) so jobs can be retried.
+
 ### Note on callbacks
 
 This gem uses Rails' callbacks to trigger synchronization.

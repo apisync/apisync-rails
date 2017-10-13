@@ -15,12 +15,16 @@ class Apisync
           end
 
           begin
-            Apisync::Rails::Http.post(
+            response = Apisync::Rails::Http.post(
               attributes,
               request_concurrency: :asynchronous,
               concurrency_lib: "Sidekiq #{::Sidekiq::VERSION}",
               too_many_requests_attempts: attempt.to_s
             )
+
+            unless response.success?
+              raise Apisync::RequestFailed, "[apisync] Request failed: #{response.body}"
+            end
 
           # When there are too many requests and ApiSync's API cannot take it,
           # this algorithm will push this job to be retried in the future.

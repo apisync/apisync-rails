@@ -19,8 +19,22 @@ RSpec.describe Apisync::Rails::SyncModelJob::Sidekiq do
             concurrency_lib: "Sidekiq 5.0.2",
             too_many_requests_attempts: "1"
           )
+          .and_return(double(success?: true))
 
         subject.perform("::Product", "1", :payload, "1")
+      end
+
+      context "when request fails" do
+        before do
+          stub_request(:post, "https://api.apisync.io/inventory-items")
+            .to_return(status: 422)
+        end
+
+        it "raises an exception to force Sidekiq retrial" do
+          expect {
+            subject.perform("::Product", "1", :payload)
+          }.to raise_error Apisync::RequestFailed
+        end
       end
 
       context "when there is a 429 response (too many requests)" do
