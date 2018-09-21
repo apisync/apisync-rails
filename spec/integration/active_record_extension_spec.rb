@@ -71,6 +71,15 @@ RSpec.describe "Integration/ActiveRecord", :integration do
     )
   end
 
+  before do
+    $original_stdout = $stdout
+    $stdout = File.open(File::NULL, "w")
+  end
+
+  after do
+    $stdout = $original_stdout
+  end
+
   describe "#save" do
     context 'when sync_if is true' do
       before do

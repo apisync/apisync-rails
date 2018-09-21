@@ -3,6 +3,15 @@ require 'spec_helper'
 RSpec.describe Apisync::Rails::SyncModelJob::Sidekiq do
   subject { described_class.new }
 
+  before do
+    $original_stdout = $stdout
+    $stdout = File.open(File::NULL, "w")
+  end
+
+  after do
+    $stdout = $original_stdout
+  end
+
   describe '#perform' do
     context 'when Sidekiq is defined' do
       before do

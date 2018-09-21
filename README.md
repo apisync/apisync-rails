@@ -100,6 +100,11 @@ class Product < ActiveRecord::Base
 end
 ```
 
+**Step 3: test on the console:** on the Rails console, try saving the model.
+The request and response should show up.
+
+You can turn off these logs, use `Apisync.verbose = false`.
+
 **Explanation**
 
 **sync_if** defines if the item should be synchronized. The method with the

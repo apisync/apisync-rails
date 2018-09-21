@@ -7,10 +7,10 @@ class Apisync
 
         if ::Rails.respond_to?(:gem_version)
           rails_version = ::Rails.gem_version.to_s
-        elsif Rails::VERSION.is_a?(String)
-          rails_version = Rails::VERSION
-        elsif Rails::VERSION::STRING
-          rails_version = Rails::VERSION::STRING
+        elsif ::Rails::VERSION.is_a?(String)
+          rails_version = ::Rails::VERSION
+        elsif ::Rails::VERSION::STRING
+          rails_version = ::Rails::VERSION::STRING
         end
 
         headers["X-Framework"] = "Ruby on Rails #{rails_version}"
@@ -23,7 +23,17 @@ class Apisync
           headers["X-TooManyRequests-Attempts"] = too_many_requests_attempts.to_s
         end
 
-        client = Apisync.new
+        if Apisync.logger.nil?
+          Apisync.logger = ::Rails.logger
+        end
+
+        if Apisync.verbose.nil?
+          verbose = ::Rails.env.development?
+        else
+          verbose = Apisync.verbose
+        end
+
+        client = Apisync.new(verbose: verbose)
         response = client.inventory_items.save(attributes: attrs, headers: headers)
 
         unless response.success?
@@ -32,7 +42,7 @@ class Apisync
             reference_id_msg = "with reference_id '#{attrs[:reference_id]}' "
           end
 
-          ::Rails.logger.warn "[apisync] Request #{reference_id_msg}failed: #{response.body}"
+          ::Rails.logger.warn "[APISync] Request #{reference_id_msg}failed: #{response.body}"
         end
 
         response
