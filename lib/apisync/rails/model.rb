@@ -31,13 +31,14 @@ class Apisync
         @attributes[attr_name] = { attr_name: attr_name, from: from, value: value }
       end
 
-      def custom_attribute(attr_name, from: nil, value: nil, name: nil)
+      def custom_attribute(attr_name, from: nil, value: nil, identifier: nil, label:)
         @attributes[:custom_attributes] ||= []
         @attributes[:custom_attributes] << {
           attr_name: attr_name,
           from: from,
           value: value,
-          name: name
+          identifier: identifier,
+          label: label
         }
       end
 
@@ -91,14 +92,15 @@ class Apisync
           if attr == :custom_attributes
             custom_attrs = []
             properties.each do |custom_attr|
-              from      = custom_attr[:from]
-              value     = custom_attr[:value]
-              attr_name = custom_attr[:attr_name]
-              name      = custom_attr[:name]
+              from       = custom_attr[:from]
+              value      = custom_attr[:value]
+              attr_name  = custom_attr[:attr_name]
+              label      = custom_attr[:label]
+              identifier = custom_attr[:identifier]
 
               custom_attrs << {
-                name: localized_name(name),
-                identifier: attr_name.to_s,
+                label: label || localized_name(name),
+                identifier: identifier || attr_name.to_s,
                 value: attr_value(attr_name, from: from, value: value)
               }
             end

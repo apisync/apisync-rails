@@ -46,12 +46,12 @@ class Product < ActiveRecord::Base
     # remove it to always sync all items
     sync_if :should_sync?
 
-    # required attributes
+    # Required attributes
     attribute :ad_template_type, from: :category
     attribute :available,        from: :active?
     attribute :content_language, value: "pt-br"
 
-    # recommended attributes
+    # Recommended attributes
     attribute :brand,        from: :manufacturer
     attribute :condition,    from: :normalize_condition
     attribute :description
@@ -63,8 +63,8 @@ class Product < ActiveRecord::Base
     attribute :title
     attribute :year
 
-    # these are other attributes that you can send
-    custom_attribute :city,  name: :city_attr_name
+    # Custom attributes
+    custom_attribute :city, identifier: 'city-name',  label: 'City name'
   end
 
   private
@@ -76,10 +76,10 @@ class Product < ActiveRecord::Base
   # required format (see reference docs)
   def images
     [{
-      uri: "https://page.com/image1.jpg",
+      url: "https://page.com/image1.jpg",
       order: 1
     }, {
-      uri: "https://page.com/image2.jpg",
+      url: "https://page.com/image2.jpg",
       order: 2
     }]
   end
@@ -92,10 +92,9 @@ class Product < ActiveRecord::Base
     }
   end
 
-  # these give a human name to the custom attributes,
-  # called based on :name parameters
-  def city_attr_name
-    "Delivery city"
+  # Custom attribute
+  def city
+    self.address.city
   end
 end
 ```

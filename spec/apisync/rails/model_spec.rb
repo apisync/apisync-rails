@@ -29,11 +29,11 @@ RSpec.describe Apisync::Rails::Model do
         model:            "Mustang",
         reference_id:     "my-id",
         custom_attributes: [{
-          name:       nil,
+          label:      'Title',
           identifier: "title",
           value:      "Mustang"
         }, {
-          name:       "My subtitle name",
+          label:      "Subtitle Name",
           identifier: "subtitle",
           value:      "It can be yours"
         }]
@@ -45,8 +45,8 @@ RSpec.describe Apisync::Rails::Model do
       subject.attribute(:content_language, value: "pt-br")
       subject.attribute(:brand)
       subject.attribute(:model)
-      subject.custom_attribute(:title)
-      subject.custom_attribute(:subtitle, from: :my_subtitle, name: :subtitle_name)
+      subject.custom_attribute(:title, identifier: 'title', label: 'Title')
+      subject.custom_attribute(:subtitle, from: :my_subtitle, label: 'Subtitle Name')
     end
 
     context 'when all fields are valid' do
