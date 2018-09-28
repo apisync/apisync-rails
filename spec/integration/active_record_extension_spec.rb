@@ -11,8 +11,8 @@ RSpec.describe "Integration/ActiveRecord", :integration do
       attribute :brand
       attribute :model
 
-      custom_attribute :title,     name: :title_name
-      custom_attribute :description, name: :subtitle_name
+      custom_attribute :title,     identifier: :title_name, label: 'Title'
+      custom_attribute :description, identifier: :subtitle_name, label: 'Subtitle Name'
     end
 
     private
@@ -40,12 +40,12 @@ RSpec.describe "Integration/ActiveRecord", :integration do
           brand:            "Apple",
           model:            "iPad Pro 10\"",
           custom_attributes: [{
-            name:       "My title attr name",
-            identifier: "title",
+            label:      "Title",
+            identifier: "title_name",
             value:      "iPad Pro"
           }, {
-            name:       "My subtitle attr name",
-            identifier: "description",
+            label:      "Subtitle Name",
+            identifier: "subtitle_name",
             value:      "iPad Pro for professionals"
           }],
           reference_id: uuid
