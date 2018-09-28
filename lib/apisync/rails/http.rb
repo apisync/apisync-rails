@@ -27,13 +27,7 @@ class Apisync
           Apisync.logger = ::Rails.logger
         end
 
-        if Apisync.verbose.nil?
-          verbose = ::Rails.env.development?
-        else
-          verbose = Apisync.verbose
-        end
-
-        client = Apisync.new(verbose: verbose)
+        client = Apisync.new
         response = client.inventory_items.save(attributes: attrs, headers: headers)
 
         unless response.success?
